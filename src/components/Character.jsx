@@ -2,14 +2,16 @@ import { useFBX, useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, useState, useMemo } from "react";
 import * as THREE from "three";
+import { useKeyboardControls } from "@react-three/drei";
 
 export default function Character(props) {
   const characterRef = useRef();
   const mixerRef = useRef(null);
   const [isRefReady, setIsRefReady] = useState(false);
+  const [, getKeys] = useKeyboardControls();
 
   const { nodes, materials } = useGLTF("./character/Boy.glb");
-  const { animation } = props;
+  const { animationState } = props;
 
   const { animations: idleShortAnim } = useFBX(
     "./Animations/boy1-idle_short.fbx"
@@ -22,28 +24,20 @@ export default function Character(props) {
   const { animations: crouchAnim } = useFBX("./Animations/boy1-crouch.fbx");
   const { animations: jumpAnim } = useFBX("./Animations/boy1-jump.fbx");
   const { animations: sneakAnim } = useFBX("./Animations/boy1-sneak.fbx");
-  const { animations: leftAnim } = useFBX("./Animations/boy1-left.fbx");
-  const { animations: rightAnim } = useFBX("./Animations/boy1-right.fbx");
   const { animations: backAnim } = useFBX("./Animations/boy1-back.fbx");
-  const { animations: slideAnim } = useFBX("./Animations/boy1-slide.fbx");
   const { animations: kickAnim } = useFBX("./Animations/boy1-kick.fbx");
 
-  walkAnim[0].name = "walking";
-  runAnim[0].name = "running";
   idleShortAnim[0].name = "idle_short";
   idleLongAnim[0].name = "idle_long";
+  walkAnim[0].name = "walk";
+  runAnim[0].name = "run";
   crouchAnim[0].name = "crouch";
   jumpAnim[0].name = "jump";
   sneakAnim[0].name = "sneak";
-  leftAnim[0].name = "left";
-  rightAnim[0].name = "right";
   backAnim[0].name = "back";
-  slideAnim[0].name = "slide";
-  kickAnim[0].name = "kick";  
+  kickAnim[0].name = "kick";
 
   const [actions, setActions] = useState(null);
-  const currentActionRef = useRef(null);
-  const targetAnimationRef = useRef(animation);
 
   useEffect(() => {
     if (characterRef.current) {
@@ -52,137 +46,95 @@ export default function Character(props) {
   }, []);
 
   useEffect(() => {
-    if (!isRefReady || !characterRef.current) return;
+    if (!isRefReady || !characterRef.current || !nodes.Hips) return;
 
     mixerRef.current = new THREE.AnimationMixer(nodes.Hips);
 
     const actionMap = {};
     const clips = [
-      walkAnim[0],
-      runAnim[0],
       idleShortAnim[0],
       idleLongAnim[0],
+      walkAnim[0],
+      runAnim[0],
       crouchAnim[0],
       jumpAnim[0],
       sneakAnim[0],
-      leftAnim[0],
-      rightAnim[0],
       backAnim[0],
-      slideAnim[0],
       kickAnim[0],
     ];
+
     clips.forEach((clip) => {
-      const action = mixerRef.current.clipAction(clip);
-      actionMap[clip.name] = action;
-      action.setEffectiveWeight(0).play();
+      if (clip) {
+        const action = mixerRef.current.clipAction(clip);
+        action.setEffectiveWeight(0).play();
+        actionMap[clip.name] = action;
+      } else {
+        console.warn("A clip failed to load and was skipped.");
+      }
     });
     setActions(actionMap);
-
-    if (actionMap.idle_short) {
-      actionMap.idle_short.reset().setEffectiveWeight(1).play();
-      currentActionRef.current = actionMap.idle_short;
-    }
 
     return () => {
       if (mixerRef.current) {
         mixerRef.current.stopAllAction();
-        mixerRef.current.uncacheRoot(characterRef.current);
+        if (nodes.Hips) {
+          mixerRef.current.uncacheRoot(nodes.Hips);
+        }
         mixerRef.current = null;
       }
+      setActions(null);
     };
-  }, [isRefReady]);
-
-  useEffect(() => {
-    targetAnimationRef.current = animation;
-  }, [animation]);
+  }, [isRefReady, nodes.Hips]);
 
   useFrame((state, delta) => {
-    if (mixerRef.current && actions) {
-      mixerRef.current.update(delta);
+    if (!mixerRef.current || !actions || !animationState) return;
 
-      const targetAnimation = targetAnimationRef.current;
-      const currentAction = currentActionRef.current;
-      const newAction = actions[targetAnimation];
+    const { forward, backward, jump, sprint, crouch } = getKeys();
 
-      if (newAction && newAction !== currentAction) {
-        console.log(
-          `Transitioning from ${currentAction?.getClip().name || "none"} to ${
-            newAction.getClip().name
-          }`
+    Object.keys(animationState).forEach((key) => {
+      animationState[key] = false;
+    });
+
+    if (jump) {
+      animationState.jump = true;
+    } else if (forward || backward) {
+      if (sprint) {
+        animationState.run = true;
+      } else if (crouch) {
+        animationState.sneak = true;
+      } else {
+        animationState.walk = true;
+      }
+    } else if (crouch) {
+      animationState.crouch = true;
+    } else {
+      animationState.idle_short = true;
+    }
+
+    mixerRef.current.update(delta);
+
+    const FADE_DURATION = 0.5;
+
+    for (const actionName in actions) {
+      const action = actions[actionName];
+      const shouldBeActive = animationState[actionName] === true;
+
+      if (shouldBeActive && action.getEffectiveWeight() < 1.0) {
+        action.reset();
+        action.setEffectiveWeight(
+          Math.min(1.0, action.getEffectiveWeight() + delta / FADE_DURATION)
         );
-
-        if (currentAction) {
-          currentAction.fadeOut(0.5);
-        }
-
-        newAction.reset().setEffectiveWeight(1).fadeIn(0.5).play();
-
-        currentActionRef.current = newAction;
+        if (!action.isRunning()) action.play();
+      } else if (!shouldBeActive && action.getEffectiveWeight() > 0.0) {
+        action.setEffectiveWeight(
+          Math.max(0.0, action.getEffectiveWeight() - delta / FADE_DURATION)
+        );
+        if (action.getEffectiveWeight() === 0.0) action.stop();
       }
     }
   });
 
   const groupProps = useMemo(() => ({ ...props, dispose: null }), [props]);
-
-  const requiredNodes = [
-    "Hips",
-    "EyeLeft",
-    "EyeRight",
-    "Wolf3D_Head",
-    "Wolf3D_Teeth",
-    "Wolf3D_Hair",
-    "Wolf3D_Glasses",
-    "Wolf3D_Facewear",
-    "Wolf3D_Body",
-    "Wolf3D_Outfit_Bottom",
-    "Wolf3D_Outfit_Footwear",
-    "Wolf3D_Outfit_Top",
-  ];
-  const requiredMaterials = [
-    "Wolf3D_Eye",
-    "Wolf3D_Skin",
-    "Wolf3D_Teeth",
-    "Wolf3D_Hair",
-    "Wolf3D_Glasses",
-    "Wolf3D_Facewear",
-    "Wolf3D_Body",
-    "Wolf3D_Outfit_Bottom",
-    "Wolf3D_Outfit_Footwear",
-    "Wolf3D_Outfit_Top",
-  ];
-
-  for (const node of requiredNodes) {
-    if (!nodes[node]) {
-      console.error(`Missing node: ${node}`);
-      return null;
-    }
-  }
-  for (const material of requiredMaterials) {
-    if (!materials[material]) {
-      console.error(`Missing material: ${material}`);
-      return null;
-    }
-  }
-
-  const skinnedMeshes = [
-    "EyeLeft",
-    "EyeRight",
-    "Wolf3D_Head",
-    "Wolf3D_Teeth",
-    "Wolf3D_Hair",
-    "Wolf3D_Glasses",
-    "Wolf3D_Facewear",
-    "Wolf3D_Body",
-    "Wolf3D_Outfit_Bottom",
-    "Wolf3D_Outfit_Footwear",
-    "Wolf3D_Outfit_Top",
-  ];
-  for (const mesh of skinnedMeshes) {
-    if (!nodes[mesh].skeleton) {
-      console.error(`Missing skeleton for mesh: ${mesh}`);
-      return null;
-    }
-  }
 
   return (
     <group ref={characterRef} {...groupProps}>
@@ -270,5 +222,3 @@ export default function Character(props) {
 }
 
 useGLTF.preload("./character/Boy.glb");
-useFBX.preload("./Animations/boy1-sneak.fbx");
-useFBX.preload("./Animations/boy1-fast_run.fbx");
