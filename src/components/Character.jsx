@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import * as THREE from "three";
 import { useKeyboardControls } from "@react-three/drei";
 
-export default function Character(props) {
+export default function Character({ isCrouching, isJumping, ...props }) {
   const characterRef = useRef();
   const mixerRef = useRef(null);
   const [isRefReady, setIsRefReady] = useState(false);
@@ -14,7 +14,7 @@ export default function Character(props) {
   const { animationState } = props;
 
   const { animations: idleShortAnim } = useFBX(
-    "./Animations/boy1-idle_short.fbx"
+    "./Animations/boy1-idle_short1.fbx"
   );
   const { animations: idleLongAnim } = useFBX(
     "./Animations/boy1-idle_long.fbx"
@@ -22,7 +22,7 @@ export default function Character(props) {
   const { animations: walkAnim } = useFBX("./Animations/boy1-walk.fbx");
   const { animations: runAnim } = useFBX("./Animations/boy1-run.fbx");
   const { animations: crouchAnim } = useFBX("./Animations/boy1-crouch.fbx");
-  const { animations: jumpAnim } = useFBX("./Animations/boy1-jump.fbx");
+  const { animations: jumpAnim } = useFBX("./Animations/boy1-jump1.fbx");
   const { animations: sneakAnim } = useFBX("./Animations/boy1-sneak.fbx");
   const { animations: backAnim } = useFBX("./Animations/boy1-back.fbx");
   const { animations: kickAnim } = useFBX("./Animations/boy1-kick.fbx");
@@ -89,23 +89,25 @@ export default function Character(props) {
   useFrame((state, delta) => {
     if (!mixerRef.current || !actions || !animationState) return;
 
-    const { forward, backward, jump, sprint, crouch } = getKeys();
+    const { forward, backward, jump, sprint } = getKeys();
 
     Object.keys(animationState).forEach((key) => {
       animationState[key] = false;
     });
 
-    if (jump) {
+    if (isCrouching && sprint) {
+      animationState.crouch = true;
+    } else if (jump) {
       animationState.jump = true;
     } else if (forward || backward) {
-      if (sprint) {
+      if (sprint && !isCrouching) {
         animationState.run = true;
-      } else if (crouch) {
+      } else if (isCrouching) {
         animationState.sneak = true;
       } else {
         animationState.walk = true;
       }
-    } else if (crouch) {
+    } else if (isCrouching) {
       animationState.crouch = true;
     } else {
       animationState.idle_short = true;
@@ -113,23 +115,31 @@ export default function Character(props) {
 
     mixerRef.current.update(delta);
 
-    const FADE_DURATION = 0.5;
+    const FADE_DURATION = 0.4;
+    const FADE_DURATION_FAST = 0.1;
 
     for (const actionName in actions) {
       const action = actions[actionName];
       const shouldBeActive = animationState[actionName] === true;
 
+      let fadeDuration = FADE_DURATION;
+
+      if (
+        (actionName === "walk" && animationState.idle_short) ||
+        (actionName === "idle_short" && actions.run?.isRunning())
+      ) {
+        fadeDuration = FADE_DURATION_FAST;
+      }
+
       if (shouldBeActive && action.getEffectiveWeight() < 1.0) {
         action.reset();
         action.setEffectiveWeight(
-          Math.min(1.0, action.getEffectiveWeight() + delta / FADE_DURATION)
+          Math.min(1.0, action.getEffectiveWeight() + delta / fadeDuration)
         );
-        if (!action.isRunning()) action.play();
       } else if (!shouldBeActive && action.getEffectiveWeight() > 0.0) {
         action.setEffectiveWeight(
-          Math.max(0.0, action.getEffectiveWeight() - delta / FADE_DURATION)
+          Math.max(0.0, action.getEffectiveWeight() - delta / fadeDuration)
         );
-        if (action.getEffectiveWeight() === 0.0) action.stop();
       }
     }
   });

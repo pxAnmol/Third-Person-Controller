@@ -1,7 +1,7 @@
 import { useKeyboardControls } from "@react-three/drei";
 
 const UI = () => {
-  const { forward, backward, left, right, jump } = useKeyboardControls(
+  const { forward, backward, left, right, sprint, crouch } = useKeyboardControls(
     (state) => state
   );
 
@@ -45,13 +45,22 @@ const UI = () => {
         </div>
 
         {/* Spacebar */}
+        <div className="flex gap-2 justify-center mb-2">
         <div
-          className={`w-32 h-8 flex items-center justify-center ${
-            jump ? "bg-indigo-600" : "bg-zinc-800"
+          className={`w-8 h-8 flex items-center justify-center ${
+            crouch ? "bg-indigo-600" : "bg-zinc-800"
           } border-2 ${
-            jump ? "border-indigo-400" : "border-indigo-900"
+            crouch ? "border-indigo-400" : "border-indigo-900"
           } rounded-lg text-indigo-200 font-bold backdrop-blur-sm shadow-lg shadow-indigo-900/20`}
         ></div>
+        <div
+          className={`w-18 h-8 flex items-center justify-center ${
+            sprint ? "bg-indigo-600" : "bg-zinc-800"
+          } border-2 ${
+            sprint ? "border-indigo-400" : "border-indigo-900"
+          } rounded-lg text-indigo-200 font-bold backdrop-blur-sm shadow-lg shadow-indigo-900/20`}
+        ></div>
+        </div>
       </div>
     </div>
   );

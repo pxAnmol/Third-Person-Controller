@@ -1,5 +1,6 @@
 import { Environment, Grid, OrbitControls } from "@react-three/drei";
 import { Perf } from "r3f-perf";
+import Park from "./components/Park.jsx";
 import Character from "./components/Character.jsx";
 import Controller from "./components/Controller.jsx";
 import { Physics, RigidBody } from "@react-three/rapier";
@@ -27,23 +28,27 @@ const App = () => {
   return (
     <>
       <Grid
-        position-y={-1}
         infiniteGrid
         sectionColor={"#888"}
         cellColor={"#666"}
         fadeStrength={5}
       />
-      <Physics debug>
-        <Controller>
-          <Character animationState={animationState} />
+      <Physics>
+        <Controller position={[0, 2, 0]}>
+          <Character scale={0.75} animationState={animationState} />
         </Controller>
+
+        <Park scale={0.002} position={[-2, 0, 0]} />
+
         {/* Floor */}
-        <RigidBody type="fixed" colliders="hull">
+
+        {/* <RigidBody type="fixed" restitution={0} friction={1} colliders="hull">
           <mesh position={[0, -1, 0]}>
             <boxGeometry args={[100, 1, 100]} />
-            <meshBasicMaterial transparent opacity={0.0} />
+            <meshBasicMaterial transparent color={"#f00"} opacity={0.5} />
           </mesh>
-        </RigidBody>
+        </RigidBody> */}
+        
       </Physics>
 
       <Environment preset="city" />

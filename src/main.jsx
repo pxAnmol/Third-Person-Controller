@@ -16,20 +16,26 @@ createRoot(document.getElementById("root")).render(
         { name: "right", keys: ["ArrowRight", "d", "D"] },
         { name: "jump", keys: ["Space"] },
         { name: "crouch", keys: ["ControlLeft"] },
-        { name: "sprint", keys: ["ShiftLeft"] },
+        { name: "sprint", keys: ["ShiftLeft", "ShiftRight"] },
         { name: "attack", keys: ["Mouse0"] },
       ]}
     >
       <Canvas
-        camera={{ fov: 55, position: [0, 0.7, 2.7] }}
-        gl={{ powerPreference: "high-performance" }}
+        shadows
+        camera={{ fov: 50, position: [0, 10, -20] }}
+        gl={{
+          powerPreference: "high-performance",
+          antialias: true,
+          precision: "mediump",
+          alpha: false,
+        }}
       >
         <color attach="background" args={["#222"]} />
         <Suspense fallback={null}>
           <App />
         </Suspense>
       </Canvas>
-      <UI />
+      {/* <UI /> */}
     </KeyboardControls>
   </StrictMode>
 );
