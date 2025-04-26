@@ -15,7 +15,7 @@ createRoot(document.getElementById("root")).render(
         { name: "left", keys: ["ArrowLeft", "a", "A"] },
         { name: "right", keys: ["ArrowRight", "d", "D"] },
         { name: "jump", keys: ["Space"] },
-        { name: "crouch", keys: ["ControlLeft"] },
+        { name: "crouch", keys: ["ControlLeft", "ControlRight"] },
         { name: "sprint", keys: ["ShiftLeft", "ShiftRight"] },
         { name: "attack", keys: ["Mouse0"] },
       ]}

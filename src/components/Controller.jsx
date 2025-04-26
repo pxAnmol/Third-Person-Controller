@@ -17,11 +17,11 @@ export default function Controller({ children, ...props }) {
   const { rapier, world } = useRapier();
   const rapierWorld = world;
 
-  const WALK_SPEED = isCrouching ? 2 : 3;
-  const SPRINT_SPEED = 4.5;
+  const WALK_SPEED = isCrouching ? 2.5 : 4;
+  const SPRINT_SPEED = 6;
   const JUMP_FORCE = 1;
-  let TURN_SPEED = isSprint ? 0.07 : 0.03;
-  TURN_SPEED = isCrouching ? 0.02 : TURN_SPEED;
+  let TURN_SPEED = isSprint ? 0.0 : 0.04;
+  TURN_SPEED = isCrouching ? 0.04 : TURN_SPEED;
 
   useEffect(() => {
     const unsubscribeJump = subscribeKeys(
@@ -96,12 +96,12 @@ export default function Controller({ children, ...props }) {
     const cameraPosition = new THREE.Vector3();
     cameraPosition.copy(characterPosition);
 
-    let cameraDistance = 2.55;
+    let cameraDistance = 1.5;
     if (forward || backward || left || right) {
       if (sprint && !isCrouching) {
-        cameraDistance = 2.65;
+        cameraDistance = 1.75;
       }
-      cameraDistance = isCrouching ? cameraDistance * 0.85 : cameraDistance;
+      cameraDistance = isCrouching ? cameraDistance * 1.15 : cameraDistance;
     }
     let cameraHeight = 1.2;
     if (forward || backward || left || right) {
@@ -131,14 +131,14 @@ export default function Controller({ children, ...props }) {
     <RigidBody
       {...props}
       ref={characterRef}
-      mass={10}
+      mass={2}
       type="dynamic"
       colliders={false}
-      restitution={0.5}
-      friction={0.5}
+      restitution={0.2}
+      friction={0.7}
       canSleep={false}
       lockRotations
-      linearDamping={1.5}
+      linearDamping={2.5}
       angularDamping={1.25}
     >
       <CapsuleCollider
