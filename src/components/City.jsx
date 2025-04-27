@@ -1,9 +1,14 @@
 import { useGLTF } from "@react-three/drei"
 import { RigidBody } from "@react-three/rapier";
+import { useEffect } from "react";
 
 const City = (props) => {
 
   const {scene} = useGLTF('/city_buildings-com1.glb');
+
+  useEffect(() => {
+    props.onLoad?.();
+  }, [props]);
 
   return (
     <RigidBody
@@ -14,7 +19,7 @@ const City = (props) => {
       {...props}
     >
     <group>
-      <primitive object={scene} />
+      <primitive object={scene} receiveShadow castShadow />
     </group>
     </RigidBody>
   )

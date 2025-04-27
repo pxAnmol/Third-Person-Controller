@@ -24,7 +24,6 @@ export default function Character({ isCrouching, isJumping, ...props }) {
   const { animations: crouchAnim } = useFBX("./Animations/boy1-crouch.fbx");
   const { animations: jumpAnim } = useFBX("./Animations/boy1-jump1.fbx");
   const { animations: sneakAnim } = useFBX("./Animations/boy1-sneak.fbx");
-  const { animations: backAnim } = useFBX("./Animations/boy1-back.fbx");
   const { animations: kickAnim } = useFBX("./Animations/boy1-kick.fbx");
 
   idleShortAnim[0].name = "idle_short";
@@ -34,7 +33,6 @@ export default function Character({ isCrouching, isJumping, ...props }) {
   crouchAnim[0].name = "crouch";
   jumpAnim[0].name = "jump";
   sneakAnim[0].name = "sneak";
-  backAnim[0].name = "back";
   kickAnim[0].name = "kick";
 
   const [actions, setActions] = useState(null);
@@ -59,12 +57,20 @@ export default function Character({ isCrouching, isJumping, ...props }) {
       crouchAnim[0],
       jumpAnim[0],
       sneakAnim[0],
-      backAnim[0],
       kickAnim[0],
     ];
 
     clips.forEach((clip) => {
       if (clip) {
+        if (clip.name === "jump") {
+          clip.tracks.forEach((track) => {
+            track.times = track.times.map((time) => Math.max(0, time - 0.25));
+
+            if (track.name.includes("position.y")) {
+              track.values = track.values.map(() => 0);
+            }
+          });
+        }
         const action = mixerRef.current.clipAction(clip);
         action.setEffectiveWeight(0).play();
         actionMap[clip.name] = action;
@@ -89,17 +95,17 @@ export default function Character({ isCrouching, isJumping, ...props }) {
   useFrame((state, delta) => {
     if (!mixerRef.current || !actions || !animationState) return;
 
-    const { forward, backward, jump, sprint } = getKeys();
+    const { forward, sprint } = getKeys();
 
     Object.keys(animationState).forEach((key) => {
       animationState[key] = false;
     });
 
-    if (isCrouching && sprint) {
-      animationState.crouch = true;
-    } else if (jump) {
+    if (isJumping) {
       animationState.jump = true;
-    } else if (forward || backward) {
+    } else if (isCrouching && sprint) {
+      animationState.crouch = true;
+    } else if (forward) {
       if (sprint && !isCrouching) {
         animationState.run = true;
       } else if (isCrouching) {
@@ -113,7 +119,17 @@ export default function Character({ isCrouching, isJumping, ...props }) {
       animationState.idle_short = true;
     }
 
-    mixerRef.current.update(delta);
+    if (isJumping && nodes.Hips) {
+      const initialY = nodes.Hips.position.y;
+      mixerRef.current.update(delta);
+      nodes.Hips.position.set(
+        nodes.Hips.position.x,
+        initialY,
+        nodes.Hips.position.z
+      );
+    } else {
+      mixerRef.current.update(delta);
+    }
 
     const FADE_DURATION = 0.4;
     const FADE_DURATION_FAST = 0.1;
@@ -196,12 +212,6 @@ export default function Character({ isCrouching, isJumping, ...props }) {
         material={materials.Wolf3D_Glasses}
         frustumCulled={false}
         skeleton={nodes.Wolf3D_Glasses.skeleton}
-      />
-      <skinnedMesh
-        geometry={nodes.Wolf3D_Facewear.geometry}
-        material={materials.Wolf3D_Facewear}
-        frustumCulled={false}
-        skeleton={nodes.Wolf3D_Facewear.skeleton}
       />
       <skinnedMesh
         geometry={nodes.Wolf3D_Body.geometry}
