@@ -33,7 +33,7 @@ createRoot(document.getElementById("root")).render(
           <App />
         </Suspense>
       </Canvas>
-      {/* <UI /> */}
+      <UI />
     </KeyboardControls>
   </StrictMode>
 );

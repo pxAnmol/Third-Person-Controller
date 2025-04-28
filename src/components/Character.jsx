@@ -8,6 +8,7 @@ export default function Character({ isCrouching, isJumping, ...props }) {
   const characterRef = useRef();
   const mixerRef = useRef(null);
   const [isRefReady, setIsRefReady] = useState(false);
+  const [idleTimer, setIdleTimer] = useState(0);
   const [, getKeys] = useKeyboardControls();
 
   const { nodes, materials } = useGLTF("./character/Boy.glb");
@@ -103,8 +104,10 @@ export default function Character({ isCrouching, isJumping, ...props }) {
 
     if (isJumping) {
       animationState.jump = true;
+      setIdleTimer(0);
     } else if (isCrouching && sprint) {
       animationState.crouch = true;
+      setIdleTimer(0);
     } else if (forward) {
       if (sprint && !isCrouching) {
         animationState.run = true;
@@ -113,10 +116,17 @@ export default function Character({ isCrouching, isJumping, ...props }) {
       } else {
         animationState.walk = true;
       }
+      setIdleTimer(0);
     } else if (isCrouching) {
       animationState.crouch = true;
+      setIdleTimer(0);
     } else {
-      animationState.idle_short = true;
+      if (idleTimer >= 15) {
+        animationState.idle_long = true;
+      } else {
+        animationState.idle_short = true;
+        setIdleTimer(idleTimer + delta);
+      }
     }
 
     if (isJumping && nodes.Hips) {
@@ -235,6 +245,8 @@ export default function Character({ isCrouching, isJumping, ...props }) {
         geometry={nodes.Wolf3D_Outfit_Top.geometry}
         material={materials.Wolf3D_Outfit_Top}
         frustumCulled={false}
+        metalness={0.5}
+        roughness={0.5}
         skeleton={nodes.Wolf3D_Outfit_Top.skeleton}
       />
     </group>

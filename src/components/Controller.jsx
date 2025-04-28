@@ -3,7 +3,6 @@ import { useFrame } from "@react-three/fiber";
 import { RigidBody, CapsuleCollider, useRapier } from "@react-three/rapier";
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-
 export default function Controller({ children, ...props }) {
   const characterRef = useRef();
   const [subscribeKeys, getKeys] = useKeyboardControls();
@@ -20,7 +19,7 @@ export default function Controller({ children, ...props }) {
   const rapierWorld = world;
 
   const WALK_SPEED = isCrouching ? 2.5 : 4;
-  const SPRINT_SPEED = 6;
+  const SPRINT_SPEED = 6.5;
   const JUMP_FORCE = sprint ? 2.5 : 2;
   let TURN_SPEED = isCrouching ? 0.04 : 0.05;
 
@@ -136,12 +135,12 @@ export default function Controller({ children, ...props }) {
     const cameraPosition = new THREE.Vector3();
     cameraPosition.copy(characterPosition);
 
-    let cameraDistance = 1.7;
+    let cameraDistance = 1.85;
     if (forward || left || right) {
       if (sprint && !isCrouching) {
-        cameraDistance = 1.85;
+        cameraDistance = 2;
       }
-      // cameraDistance = isCrouching ? cameraDistance * 0.9 : cameraDistance;
+      cameraDistance = isCrouching ? cameraDistance * 0.9 : cameraDistance;
     }
     let cameraHeight = 1.2;
     if (forward || left || right) {

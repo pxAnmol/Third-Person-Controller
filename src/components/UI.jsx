@@ -1,65 +1,38 @@
 import { useKeyboardControls } from "@react-three/drei";
 
+const ControlButton = ({ isActive, label }) => (
+  <div
+    className={`flex items-center gap-2 p-1 rounded ${
+      isActive ? "bg-slate-700/30" : "bg-transparent"
+    } transition-colors duration-300`}
+  >
+    <span className="w-6 h-6 flex items-center justify-center border border-slate-600/50 rounded text-slate-400/80 text-xs">
+      {label}
+    </span>
+  </div>
+);
+
 const UI = () => {
-  const { forward, backward, left, right, sprint, crouch } = useKeyboardControls(
+  const { forward, left, right, sprint, crouch, jump } = useKeyboardControls(
     (state) => state
   );
 
   return (
-    <div className="interface fixed top-0 left-0 w-full h-full pointer-events-none">
-      <div className="controls absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center drop-shadow-lg">
-        {/* W key */}
-        <div className="flex justify-center mb-2">
-          <div
-            className={`w-8 h-8 flex items-center justify-center ${
-              forward ? "bg-indigo-600" : "bg-zinc-800"
-            } border-2 ${
-              forward ? "border-indigo-400" : "border-indigo-900"
-            } rounded-lg text-indigo-200 font-bold backdrop-blur-sm shadow-lg shadow-indigo-900/20`}
-          ></div>
+    <div className="interface fixed bottom-4 left-4 pointer-events-none">
+      <div className="controls flex flex-col gap-1 p-2 rounded-md backdrop-blur-[1px]">
+        <div className="flex justify-center">
+          <ControlButton isActive={forward} label="W" />
         </div>
 
-        {/* A S D keys */}
-        <div className="flex gap-2 mb-2">
-          <div
-            className={`w-8 h-8 flex items-center justify-center ${
-              left ? "bg-indigo-600" : "bg-zinc-800"
-            } border-2 ${
-              left ? "border-indigo-400" : "border-indigo-900"
-            } rounded-lg text-indigo-200 font-bold backdrop-blur-sm shadow-lg shadow-indigo-900/20`}
-          ></div>
-          <div
-            className={`w-8 h-8 flex items-center justify-center ${
-              backward ? "bg-indigo-600" : "bg-zinc-800"
-            } border-2 ${
-              backward ? "border-indigo-400" : "border-indigo-900"
-            } rounded-lg text-indigo-200 font-bold backdrop-blur-sm shadow-lg shadow-indigo-900/20`}
-          ></div>
-          <div
-            className={`w-8 h-8 flex items-center justify-center ${
-              right ? "bg-indigo-600" : "bg-zinc-800"
-            } border-2 ${
-              right ? "border-indigo-400" : "border-indigo-900"
-            } rounded-lg text-indigo-200 font-bold backdrop-blur-sm shadow-lg shadow-indigo-900/20`}
-          ></div>
+        <div className="flex gap-1 justify-center">
+          <ControlButton isActive={left} label="A" />
+          <ControlButton isActive={right} label="D" />
         </div>
 
-        {/* Spacebar */}
-        <div className="flex gap-2 justify-center mb-2">
-        <div
-          className={`w-8 h-8 flex items-center justify-center ${
-            crouch ? "bg-indigo-600" : "bg-zinc-800"
-          } border-2 ${
-            crouch ? "border-indigo-400" : "border-indigo-900"
-          } rounded-lg text-indigo-200 font-bold backdrop-blur-sm shadow-lg shadow-indigo-900/20`}
-        ></div>
-        <div
-          className={`w-18 h-8 flex items-center justify-center ${
-            sprint ? "bg-indigo-600" : "bg-zinc-800"
-          } border-2 ${
-            sprint ? "border-indigo-400" : "border-indigo-900"
-          } rounded-lg text-indigo-200 font-bold backdrop-blur-sm shadow-lg shadow-indigo-900/20`}
-        ></div>
+        <div className="flex gap-1 justify-between">
+          <ControlButton isActive={sprint} label="⇧" />
+          <ControlButton isActive={jump} label="␣" />
+          <ControlButton isActive={crouch} label="⌃" />
         </div>
       </div>
     </div>
