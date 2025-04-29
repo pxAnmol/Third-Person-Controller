@@ -10,12 +10,12 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <KeyboardControls
       map={[
-        { name: "forward", keys: ["ArrowUp", "w", "W"] },
-        { name: "left", keys: ["ArrowLeft", "a", "A"] },
-        { name: "right", keys: ["ArrowRight", "d", "D"] },
+        { name: "forward", keys: ["ArrowUp", "w", "W", "touch-forward"] },
+        { name: "left", keys: ["ArrowLeft", "a", "A", "touch-left"] },
+        { name: "right", keys: ["ArrowRight", "d", "D", "touch-right"] },
         { name: "jump", keys: ["Space"] },
         { name: "crouch", keys: ["ControlLeft", "ControlRight"] },
-        { name: "sprint", keys: ["ShiftLeft", "ShiftRight"] },
+        { name: "sprint", keys: ["ShiftLeft", "ShiftRight", "touch-sprint"] },
       ]}
     >
       <Canvas

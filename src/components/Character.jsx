@@ -3,6 +3,7 @@ import { useFrame } from "@react-three/fiber";
 import { useEffect, useRef, useState, useMemo } from "react";
 import * as THREE from "three";
 import { useKeyboardControls } from "@react-three/drei";
+import Footstep from "./Footstep";
 
 export default function Character({ isCrouching, isJumping, ...props }) {
   const characterRef = useRef();
@@ -25,7 +26,6 @@ export default function Character({ isCrouching, isJumping, ...props }) {
   const { animations: crouchAnim } = useFBX("./Animations/boy1-crouch.fbx");
   const { animations: jumpAnim } = useFBX("./Animations/boy1-jump1.fbx");
   const { animations: sneakAnim } = useFBX("./Animations/boy1-sneak.fbx");
-  const { animations: kickAnim } = useFBX("./Animations/boy1-kick.fbx");
 
   idleShortAnim[0].name = "idle_short";
   idleLongAnim[0].name = "idle_long";
@@ -34,8 +34,6 @@ export default function Character({ isCrouching, isJumping, ...props }) {
   crouchAnim[0].name = "crouch";
   jumpAnim[0].name = "jump";
   sneakAnim[0].name = "sneak";
-  kickAnim[0].name = "kick";
-
   const [actions, setActions] = useState(null);
 
   useEffect(() => {
@@ -58,7 +56,6 @@ export default function Character({ isCrouching, isJumping, ...props }) {
       crouchAnim[0],
       jumpAnim[0],
       sneakAnim[0],
-      kickAnim[0],
     ];
 
     clips.forEach((clip) => {
@@ -121,7 +118,7 @@ export default function Character({ isCrouching, isJumping, ...props }) {
       animationState.crouch = true;
       setIdleTimer(0);
     } else {
-      if (idleTimer >= 15) {
+      if (idleTimer >= 20) {
         animationState.idle_long = true;
       } else {
         animationState.idle_short = true;
@@ -174,6 +171,7 @@ export default function Character({ isCrouching, isJumping, ...props }) {
 
   return (
     <group ref={characterRef} {...groupProps}>
+      <Footstep isJumping={isJumping} isCrouching={isCrouching} />
       <primitive object={nodes.Hips} />
       <skinnedMesh
         name="EyeLeft"
@@ -245,8 +243,8 @@ export default function Character({ isCrouching, isJumping, ...props }) {
         geometry={nodes.Wolf3D_Outfit_Top.geometry}
         material={materials.Wolf3D_Outfit_Top}
         frustumCulled={false}
-        metalness={0.5}
-        roughness={0.5}
+        metalness={0.1}
+        roughness={0.8}
         skeleton={nodes.Wolf3D_Outfit_Top.skeleton}
       />
     </group>

@@ -5,8 +5,16 @@ import City from "./components/City.jsx";
 import Character from "./components/Character.jsx";
 import Controller from "./components/Controller.jsx";
 import { Physics, RigidBody } from "@react-three/rapier";
-import { EffectComposer, Noise, Vignette } from "@react-three/postprocessing";
+import {
+  ChromaticAberration,
+  EffectComposer,
+  Noise,
+  Vignette,
+} from "@react-three/postprocessing";
+
+import TouchControls from "./components/TouchControls.jsx";
 import ColorShift from "./components/ColorShift.jsx";
+import FireFlies from "./components/FireFlies.jsx";
 
 const animationNames = [
   "idle_short",
@@ -29,15 +37,19 @@ const App = () => {
   const [cityLoaded, setCityLoaded] = useState(false);
   return (
     <>
+      <TouchControls />
+
       <color attach="background" args={["#070707"]} />
       <fog attach="fog" args={["#070707", 1, 35]} />
 
       <EffectComposer>
         <Vignette offset={0.5} darkness={0.5} eskil={false} />
         <Noise opacity={0.005} />
+        <ChromaticAberration offset={[0.001, 0.001]} />
       </EffectComposer>
 
       <ColorShift />
+      <FireFlies />
 
       <Physics>
         <Suspense fallback={null}>
@@ -61,7 +73,7 @@ const App = () => {
           [0, 0, -100],
           [0, 0, 100],
         ].map((pos, i) => (
-          <RigidBody type="fixed" key={i}  rotation={[0, Math.PI * 0.9, 0]}>
+          <RigidBody type="fixed" key={i} rotation={[0, Math.PI * 0.9, 0]}>
             <mesh position={pos} rotation-y={i < 2 ? Math.PI / 2 : 0}>
               <boxGeometry args={[200, 35, 1]} />
               <meshStandardMaterial
@@ -74,22 +86,10 @@ const App = () => {
             </mesh>
           </RigidBody>
         ))}
-
-        <Float speed={[1, 1]} floatIntensity={0.2} rotationIntensity={0.2}>
-          <Sparkles
-            count={200}
-            scale={[200, 20, 200]}
-            size={3}
-            speed={0.05}
-            color="#ffffff"
-            opacity={0.1}
-            position-y={5}
-          />
-        </Float>
       </Physics>
 
-      <Environment preset="night" environmentIntensity={0.25} />
-      <Perf position="top-left" />
+      <Environment preset="night" environmentIntensity={0.3} />
+      {/* <Perf position="top-left" /> */}
     </>
   );
 };
