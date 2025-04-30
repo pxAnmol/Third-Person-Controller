@@ -252,3 +252,10 @@ export default function Character({ isCrouching, isJumping, ...props }) {
 }
 
 useGLTF.preload("./character/Boy.glb");
+useFBX.preload("./Animations/boy1-idle_short1.fbx");
+useFBX.preload("./Animations/boy1-idle_long.fbx");
+useFBX.preload("./Animations/boy1-walk.fbx");
+useFBX.preload("./Animations/boy1-run.fbx");
+useFBX.preload("./Animations/boy1-crouch.fbx");
+useFBX.preload("./Animations/boy1-jump1.fbx");
+useFBX.preload("./Animations/boy1-sneak.fbx");

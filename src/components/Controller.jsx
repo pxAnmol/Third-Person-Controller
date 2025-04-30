@@ -108,7 +108,7 @@ export default function Controller({ children, ...props }) {
     }
 
     let targetRotation = rotation;
-    if ((forward) && (left || right) && !(isCrouching && sprint)) {
+    if (forward && (left || right) && !(isCrouching && sprint)) {
       if (left) targetRotation += TURN_SPEED;
       if (right) targetRotation -= TURN_SPEED;
       setRotation(targetRotation);
@@ -135,12 +135,12 @@ export default function Controller({ children, ...props }) {
     const cameraPosition = new THREE.Vector3();
     cameraPosition.copy(characterPosition);
 
-    let cameraDistance = 1.85;
+    let cameraDistance = 1.55;
     if (forward || left || right) {
       if (sprint && !isCrouching) {
-        cameraDistance = 2;
+        cameraDistance = 1.85;
       }
-      cameraDistance = isCrouching ? cameraDistance * 0.9 : cameraDistance;
+      cameraDistance = isCrouching ? cameraDistance * 1.1 : cameraDistance;
     }
     let cameraHeight = 1.2;
     if (forward || left || right) {

@@ -43,9 +43,9 @@ const Fireflies = () => {
 
   return (
     <Instances limit={1000}>
-      <sphereGeometry args={[0.025, 16, 16]} />
+      <sphereGeometry args={[0.025, 4, 4]} />
       <meshBasicMaterial
-        color="#ffffff40"
+        color="#ffffff"
         transparent
         opacity={0.3}
         blending={THREE.AdditiveBlending}
